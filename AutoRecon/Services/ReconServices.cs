@@ -32,12 +32,28 @@ namespace AutoRecon.Services
             // Read the raw JSON response from the API
             var rawJsonResponse = await response.Content.ReadAsStringAsync();
 
+            // Variables to hold parsed data
+            string? parsedNmapData = null;
+            string? parsedVulnerabilities = null;
+
+            using (var jsonDoc = JsonDocument.Parse(rawJsonResponse))
+            {
+                var root = jsonDoc.RootElement;
+
+                parsedNmapData = root.GetProperty("data").GetRawText();
+                parsedVulnerabilities = root.GetProperty("vulnerabilities").GetRawText();
+            }
+
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var vulnerabilitiesList = JsonSerializer.Deserialize<List<Vulnerability>>(parsedVulnerabilities, options);
+
             // Save the exact JSON response to the database
             var newScan = new Scan
             {
                 TargetID = targetId,
                 Timestamp = DateTime.UtcNow,
-                RawJSON = rawJsonResponse
+                RawJSON = parsedNmapData,
+                Vulnerabilities = vulnerabilitiesList
             };
 
             _dbContext.Scans.Add(newScan);
