@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AutoRecon.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260420173040_InitialCreate")]
+    [Migration("20260425200033_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -94,10 +94,23 @@ namespace AutoRecon.Migrations
 
                     b.Property<string>("AIDescription")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasJsonPropertyName("description");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RecommendedAction")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasJsonPropertyName("recommendedAction");
 
                     b.Property<int>("ScanID")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Service")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Severity")
                         .IsRequired()

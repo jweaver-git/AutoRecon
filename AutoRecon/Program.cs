@@ -17,7 +17,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Allow C# to make HTTP requests to the API
-builder.Services.AddHttpClient<ReconServices>();
+builder.Services.AddHttpClient<ReconServices>(client =>
+{
+    client.Timeout = TimeSpan.FromMinutes(5); // Allows for longer scan times
+});
 
 var app = builder.Build();
 

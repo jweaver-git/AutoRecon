@@ -44,6 +44,17 @@ namespace AutoRecon.Services
                 parsedVulnerabilities = root.GetProperty("vulnerabilities").GetRawText();
             }
 
+            string? rawTerminalText = null;
+            using (var jsonDoc = JsonDocument.Parse(rawJsonResponse))
+            {
+                var root = jsonDoc.RootElement;
+
+                if (root.TryGetProperty("TrueRawNmapOutput", out var rawOutputElement))
+                {
+                    rawTerminalText = rawOutputElement.GetString();
+                }
+            }
+
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var vulnerabilitiesList = JsonSerializer.Deserialize<List<Vulnerability>>(parsedVulnerabilities, options);
 
@@ -53,7 +64,8 @@ namespace AutoRecon.Services
                 TargetID = targetId,
                 Timestamp = DateTime.UtcNow,
                 RawJSON = parsedNmapData,
-                Vulnerabilities = vulnerabilitiesList
+                Vulnerabilities = vulnerabilitiesList,
+                TrueRawNmapOutput = rawTerminalText
             };
 
             _dbContext.Scans.Add(newScan);

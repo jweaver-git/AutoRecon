@@ -1,0 +1,164 @@
+﻿@model IEnumerable<AutoRecon.Models.Scan>
+
+@{
+    ViewData["Title"] = "Scan History";
+}
+
+<style>
+    /* Reusing the global dark theme from the layout */
+    .history-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .history-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .history-title {
+        color: #ffffff;
+        margin: 0;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #1e1e1e;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .history-table th {
+        background-color: #25252b;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85em;
+        padding: 15px 20px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+    .history-table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #2a2a2a;
+        color: #ccc;
+        vertical-align: middle;
+    }
+    .history-table tr:hover {
+        background-color: #252525;
+    }
+    .history-table tr:last-child td {
+        border-bottom: none;
+    }
+    /* Vulnerability Severity Pill Styles */
+    .vuln-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+        margin-right: 5px;
+        color: white;
+    }
+    .bg-Critical {
+        background-color: #dc3545;
+    }
+    .bg-High {
+        background-color: #fd7e14;
+    }
+    .bg-Medium {
+        background-color: #ffc107;
+        color: #000;
+    }
+    .bg-Low {
+        background-color: #20c997;
+        color: #000;
+    }
+    .bg-None {
+        background-color: #555;
+    }
+    .time-text {
+        font-family: monospace;
+        color: #0dcaf0;
+    }
+</style>
+
+<div class="history-wrapper">
+    <div class="history-header">
+        <h2 class="history-title">Target Audit Log</h2>
+        <span style="color: #666;">Showing @Model.Count() Total Scans</span>
+    </div>
+
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Scan ID</th>
+                <th>Timestamp (UTC)</th>
+                <th>Target IP</th> <th>Threat Summary</th>
+                <th>Total Ports Found</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var scan in Model)
+            {
+                var critCount = scan.Vulnerabilities?.Count(v => v.Severity == "Critical") ?? 0;
+                var highCount = scan.Vulnerabilities?.Count(v => v.Severity == "High") ?? 0;
+                var medCount = scan.Vulnerabilities?.Count(v => v.Severity == "Medium") ?? 0;
+                var lowCount = scan.Vulnerabilities?.Count(v => v.Severity == "Low") ?? 0;
+                var totalVulns = critCount + highCount + medCount + lowCount;
+                
+                <tr>
+                    <td style="font-weight: bold; color: #fff;">#@scan.ScanID.ToString("D4")</td>
+                    <td class="time-text">@scan.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+
+                    <td style="color: #0dacf0; font-family: monospace; font-weight: bold;">
+                        @scan.TargetIP
+                    </td>
+
+                    <td>
+                        @if (totalVulns == 0)
+                        {
+                            <span class="vuln-pill bg-None">Clean Scan</span>
+                        }
+                        else
+                        {
+                            @if (critCount > 0)
+                            {
+                                <span class="vuln-pill bg-Critical">@critCount Critical</span>
+                            }
+                            @if (highCount > 0)
+                            {
+                                <span class="vuln-pill bg-High">@highCount High</span>
+                            }
+                            @if (medCount > 0)
+                            {
+                                <span class="vuln-pill bg-Medium">@medCount Medium</span>
+                            }
+                            @if (lowCount > 0)
+                            {
+                                <span class="vuln-pill bg-Low">@lowCount Low</span>
+                            }
+                        }
+                    </td>
+                    <td style="color: #888;">
+                        @(scan.Vulnerabilities?.Count ?? 0) Services Flagged
+                    </td>
+
+                    <td>
+                        <a asp-action="Index" asp-route-id="@scan.ScanID" class="btn-export"
+                            style="text-decoration: none; font-size: 0.8em; padding: 5px 12px; background-color: #0dcaf0; color: #000; border-radius: 4px; font-weight: bold;">
+                             View Report
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

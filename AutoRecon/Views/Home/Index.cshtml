@@ -1,8 +1,350 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model AutoRecon.Models.Scan
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    /* Dashboard Layout */
+    .dashboard-wrapper {
+        width: 95%;
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(400px, 40%) 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+    /* Panel Styles */
+    .panel {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
+    }
+    .panel-title {
+        color: #555;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+    }
+    /* Command Center Styles */
+    .scan-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .input-label {
+        color: #888;
+        font-size: 0.9em;
+        margin-bottom: -10px;
+    }
+    .ip-input {
+        background-color: #121212;
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 1.1em;
+        outline: none;
+    }
+    .ip-input:focus {
+        border-color: #0d6efd;
+    }
+    .btn-execute {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .btn-execute:hover {
+        background-color: #0b5ed7;
+    }
+    /* Nmap Raw Data Terminal */
+    .terminal-window {
+        background-color: #000;
+        border: 1px solid #222;
+        border-radius: 4px;
+        padding: 15px;
+        overflow-x: auto;
+        max-height: 550px;
+        overflow-y: auto;
+        min-height: 250px;
+    }
+    .terminal-text {
+        color: #00ff00;
+        font-family: Courier New, Courier, monospace;
+        font-size: 0.9em;
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    /* AI Summary Styles */
+    .ai-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .ai-title {
+        color: #0dcaf0;
+        font-size: 1.2rem;
+        margin: 0;
+        font-weight: normal;
+    }
+    .btn-export {
+        background-color: #198754;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+    .vuln-card {
+        background-color: #161b22;
+        border: 1px solid #333;
+        border-left-width: 4px;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    .severity-Critical {
+        border-left-color: #dc3545;
+    }
+    .severity-High {
+        border-left-color: #fd7e14;
+    }
+    .severity-Medium {
+        border-left-color: #ffc107;
+    }
+    .severity-Low {
+        border-left-color: #20c997;
+    }
+    .vuln-title {
+        font-size: 1.1em;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .text-Critical {
+        color: #dc3545;
+    }
+    .text-High {
+        color: #fd7e14;
+    }
+    .text-Medium {
+        color: #ffc107;
+    }
+    .text-Low {
+        color: #20c997;
+    }
+    .vuln-desc {
+        color: #a0a0a0;
+        margin: 0;
+        line-height: 1.5;
+        font-size: 0.95em;
+    }
+    .action-block {
+        margin-top: 15px;
+        padding: 12px;
+        background-color: #1a2621;
+        border-left: 3px solid #20c997;
+        border-radius: 4px;
+    }
+    .action-title {
+        color: #20c997;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        font-weight: bold;
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+    .action-text {
+        color: #d0d0d0;
+        margin: 0;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+    /* Responsive Design */
+    @@media (max-width: 1000px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    /* Print / PDF Export Styles */
+    @@media print {
+        /* Simplify styles for printing */
+        body, .dashboard-wrapper, .panel, .terminal-window, .vuln-card {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border-color: #cccccc !important;
+            box-shadow: none !important;
+        }
+
+        /* Hide unnecessary elements for printing */
+        .top-nav, .scan-form, .btn-export {
+            display: none !important;
+        }
+
+        /* Hides Target Configuration panel for printing */
+        .left-col .panel:first-of-type {
+            display: none !important;
+        }
+        /* Adjust layout & readability for print */
+        .dashboard-grid {
+            display: block !important;
+        }
+        .left-col, .right-col {
+            width: 100% !important;
+            margin-bottom: 30px;
+        }
+        .terminal-text {
+            color: #000000 !important;
+            font-size: 0.85em;
+        }
+        /* Ensure vulnerability cards do not break across pages */
+        .vuln-card {
+            page-break-inside: avoid;
+            border-left-width: 6px !important;
+        }
+        /* Darken text colors for readability on white paper */
+        .ai-title, .port-info, .port-info strong {
+            color: #0056b3 !important;
+        }
+        .text-Critical {
+            color: #cc0000 !important;
+        }
+        .text-High {
+            color: #d96600 !important;
+        }
+        .text-Medium {
+            color: #b38600 !important;
+        }
+        .text-Low {
+            color: #0f7a5a !important;
+        }
+        /* Adjust action block for print */
+        .action-block {
+            background-color: #f8fffb !important;
+            border-color: #0f7a5a !important;
+        }
+        .action-title, .action-text {
+            color: #000000 !important;
+        }
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="dashboard-grid">
+        
+        <div class="left-col">
+            
+            <div class="panel">
+                <h2 class="panel-title">Target Configuration</h2>
+                <form class="scan-form" method="post" action="/Home/RunScan">
+                    <label class="input-label" for="ipAddress">Target IP or Domain</label>
+                    <input type="text" class="ip-input" id="ipAddress" name="ipAddress" value="127.0.0.1" required />
+                    <button type="submit" class="btn-execute">Execute Scan</button>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">Raw Nmap Output</h2>
+                <div class="terminal-window" id="terminalWindow">
+                    @if (Model != null && !string.IsNullOrEmpty(Model.TrueRawNmapOutput))
+                    {
+                        <pre class="terminal-text">@Model.TrueRawNmapOutput</pre>
+                    }
+                    else
+                    {
+                        <pre class="terminal-text" style="color: #555">Waiting for scan initialization...</pre>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <div class="right-col">
+            <div class="panel" style="background-color: transparent; border: none; box-shadow: none; padding: 0;">
+                <div class="ai-header">
+                    <h2 class="ai-title">AI Vulnerability Summary</h2>
+                    <button class="btn-export" id="exportBtn" onclick="window.print()">Export Report (PDF)</button>
+                </div>
+                @if (Model != null && Model.Vulnerabilities != null)
+                {
+                    @foreach (var vuln in Model.Vulnerabilities)
+                    {
+                        <div class="vuln-card severity-@vuln.Severity">
+                            <h3 class="vuln-title text-@vuln.Severity">@vuln.Severity: @vuln.Title</h3>
+                            <p class="vuln-desc port-info" style="margin-bottom: 8px; font-family: monospace;">
+                                <strong>PORT:</strong> @vuln.Port | <strong>SERVICE:</strong> @vuln.Service
+                            </p>
+                            <p class="vuln-desc">@vuln.AIDescription</p>
+
+                            <div class="action-block">
+                                <h4 class="action-title">Recommended Action</h4>
+                                <p class="action-text">@vuln.RecommendedAction</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="vuln-card" style="border-left-color: #555">
+                        <p class="vuln-desc" style="color: #555;">No vulnerabilities detected or scan pending.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedIP = localStorage.getItem('ar_defaultIP');
+        const ipInput = document.getElementById('ipAddress');
+        if (savedIP && ipInput && !ipInput.value) {
+            ipInput.value = savedIP;
+        }
+
+        if (localStorage.getItem('ar_hideTerminal') === 'true') {
+            const terminalBox = document.getElementById('terminalWindow');
+            if (terminalBox) {
+                terminalBox.style.display = 'none';
+            }
+        }
+
+        @if (Model != null && Model.Vulnerabilities != null && Model.Vulnerabilities.Any())
+        {
+            <text>
+                if (localStorage.getItem('ar_autoExport') === 'true') {
+                const exportBtn = document.getElementById('exportBtn');
+                if (exportBtn) {
+                    setTimeout(() => exportBtn.click(), 500);
+                }
+            }
+            </text>
+        }
+    });
+</script>

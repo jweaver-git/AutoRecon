@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+}
+
+<style>
+    .settings-wrapper {
+        width: 95%;
+        max-width: 800px;
+        margin: 40px auto;
+    }
+    .panel {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }    
+    .panel-title {
+        color: #555;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+    }
+    .form-group { 
+        margin-bottom: 25px; 
+    }    
+    .input-label {
+        color: #888;
+        font-size: 0.9em;
+        display: block;
+        margin-bottom: 8px;
+    }
+    .settings-input {
+        background-color: #121212;
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 1.1em;
+        width: 100%;
+        box-sizing: border-box;
+        outline: none;
+    }
+    .settings-input:focus { 
+        border-color: #0d6efd; 
+    }
+    .toggle-row {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .toggle-row input[type="checkbox"] {
+        margin-top: 4px;
+        margin-right: 12px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .toggle-text {
+        display: flex;
+        flex-direction: column;
+    }
+    .toggle-title {
+        color: #e0e0e0;
+        font-weight: 600;
+        font-size: 1em;
+        margin-bottom: 4px;
+    }
+    .toggle-desc {
+        color: #666;
+        font-size: 0.85em;
+        margin: 0;
+    }
+    .btn-execute {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 15px;
+    }
+    .btn-execute:hover { 
+        background-color: #0b5ed7; 
+    }    
+    .save-msg {
+        color: #20c997;
+        font-weight: bold;
+        margin-left: 15px;
+        display: none;
+    }
+</style>
+
+<div class="settings-wrapper">
+    <div class="panel">
+        <h2 class="panel-title">Preferences</h2>
+        
+        <form id="settingsForm">
+            <div class="form-group">
+                <label class="input-label">Default Target IP</label>
+                <input type="text" id="pref_defaultIP" class="settings-input" placeholder="e.g., 127.0.0.1 or 192.168.1.50">
+            </div>
+
+            <div class="form-group" style="margin-top: 35px;">
+                <div class="toggle-row">
+                    <input type="checkbox" id="pref_hideTerminal">
+                    <div class="toggle-text">
+                        <span class="toggle-title">Hide Raw Nmap Terminal</span>
+                        <p class="toggle-desc">Automatically collapses the raw output box on the main dashboard to save screen space.</p>
+                    </div>
+                </div>
+
+                <div class="toggle-row">
+                    <input type="checkbox" id="pref_autoExport">
+                    <div class="toggle-text">
+                        <span class="toggle-title">Auto-Export PDF</span>
+                        <p class="toggle-desc">Automatically triggers a PDF download the moment the AI summary is successfully generated.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-execute">Save Preferences</button>
+            <span id="saveConfirmation" class="save-msg">Preferences Saved!</span>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('pref_defaultIP').value = localStorage.getItem('ar_defaultIP') || '';
+        document.getElementById('pref_hideTerminal').checked = localStorage.getItem('ar_hideTerminal') === 'true';
+        document.getElementById('pref_autoExport').checked = localStorage.getItem('ar_autoExport') === 'true';
+    });
+
+    document.getElementById('settingsForm').addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        
+        localStorage.setItem('ar_defaultIP', document.getElementById('pref_defaultIP').value);
+        localStorage.setItem('ar_hideTerminal', document.getElementById('pref_hideTerminal').checked);
+        localStorage.setItem('ar_autoExport', document.getElementById('pref_autoExport').checked);
+
+        const confirmMsg = document.getElementById('saveConfirmation');
+        confirmMsg.style.display = 'inline';
+        setTimeout(() => confirmMsg.style.display = 'none', 3000);
+    });
+</script>

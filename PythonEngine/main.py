@@ -5,6 +5,7 @@ from openai import OpenAI
 import os
 import nmap
 import json
+import subprocess
 
 load_dotenv()
 
@@ -54,9 +55,9 @@ def run_scan(target: Target):
                     
         print(f"[+] Scan complete. Found {len(scan_results['open_ports'])} open ports.")
         
-        # =============
+        # =========
         # AI LAYER
-        # =============
+        # =========
         vulnerabilities = []
 
         # Ensures the AI is only asked to analyze if open ports are found.
@@ -68,7 +69,9 @@ def run_scan(target: Target):
             You are a Senior Penetration Tester analyzing Nmap scan results.
             Identify potential security vulnerabilities based on the open ports and services provided.
             You MUST return the results STRICTLY as a JSON array of objects.
-            Each object must have: 'port' (int), 'service' (string), 'title' (string), severity' (High/Medium/Low), and 'description' (string).
+            Each object must have: 'port' (int), 'service' (string), 'title' (string), severity' (Critical/High/Medium/Low), 'description' (string), and 'recommendedAction' (string).
+            Use 'Critical' for highly exploitable services like exposed SMB or unauthenticated databases.
+            The 'recommendedAction' should provide a concise, technical step to fix or mitigate the vulnerability.
             Do not include any markdown formatting, backticks, or conversational text.
             """
 
@@ -86,10 +89,18 @@ def run_scan(target: Target):
             vulnerabilities = json.loads(raw_ai_text)
             print("[+] AI analysis complete.")
         
+        # ====================
+        # TRUE RAW NMAP OUTPUT
+        # ====================
+        command = ["nmap", "-T4", "-A", "-v", "--top-ports", "100", target.ip_address]
+        process = subprocess.run(command, capture_output=True, text=True)
+        raw_terminal_text = process.stdout
+
         return {
             "status": "success", 
             "data": scan_results, 
-            "vulnerabilities": vulnerabilities
+            "vulnerabilities": vulnerabilities,
+            "TrueRawNmapOutput": raw_terminal_text
         }
 
     except nmap.PortScannerError as e:

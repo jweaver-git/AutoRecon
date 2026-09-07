@@ -76,7 +76,10 @@ namespace AutoRecon.Migrations
                     ScanID = table.Column<int>(type: "INTEGER", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Severity = table.Column<string>(type: "TEXT", nullable: false),
-                    AIDescription = table.Column<string>(type: "TEXT", nullable: false)
+                    AIDescription = table.Column<string>(type: "TEXT", nullable: false),
+                    RecommendedAction = table.Column<string>(type: "TEXT", nullable: false),
+                    Port = table.Column<int>(type: "INTEGER", nullable: false),
+                    Service = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
