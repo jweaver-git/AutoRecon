@@ -6,7 +6,8 @@ AutoRecon is a web application that automates network reconnaissance. Originally
 This repository demonstrates full-stack development, API integration, and secure credential management.
 
 ## Demonstration
-*(Drag and drop your demo.mp4 file here in GitHub to embed the video!)*
+
+[![AutoRecon Demo](https://img.youtube.com/vi/5HGUIQQHLLs/maxresdefault.jpg)](https://www.youtube.com/watch?v=5HGUIQQHLLs)
 
 **Note:** Real-time scans take approximately 2.5 minutes to process because the AI engine generates custom threat summaries for all 18 discovered vulnerabilities. The video above is sped up for demonstration purposes.
 
